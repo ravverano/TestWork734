@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     PSQL_PORT: str
     PSQL_DBNAME: str
     SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
+    API_KEY: str
 
     @validator("SQLALCHEMY_DATABASE_URI", pre=True)
     def assemble_db_connection(
