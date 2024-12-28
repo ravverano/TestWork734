@@ -6,13 +6,21 @@ from db_postgres.session import engine
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 
-app = FastAPI()
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+app = FastAPI()
+
+from api import (
+    transactions
+)
+
+#  include the modules here
+app.include_router(transactions.api_router)
+
 @app.on_event("startup")
 async def startup_event():
+    # Try to create a database session and execute a test query
     try:
         with engine.connect() as connection:
             connection.execute(text("SELECT 1"))
