@@ -1,2 +1,5 @@
 fastapi
 uvicorn[standard]
+pydantic[email]==1.10.2
+sqlalchemy==1.4.45
+psycopg2-binary
