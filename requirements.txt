@@ -6,3 +6,4 @@ psycopg2-binary
 celery
 redis
 flower
+pytest
