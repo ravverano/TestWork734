@@ -5,6 +5,7 @@ from workers import celery_worker
 from fastapi.encoders import jsonable_encoder
 from schemas.response import GetResponse
 from fastapi import HTTPException
+from library.utils import utils
 import heapq, json
 
 class Transaction():
@@ -21,7 +22,7 @@ class Transaction():
         if result:
             result = json.loads(result)
         else:
-            result = self.calculate_statistics(db)
+            result = utils.calculate_statistics(db)
             self.redis.set("transaction_statistics", json.dumps(result))
 
         return result
@@ -79,7 +80,6 @@ class Transaction():
         self,
         db: Session
     ):
-        # 1. Calculate the total number of transactions
         total_transactions = db.query(
             func.count(Transactions.transaction_id)
         ).scalar() or 0
@@ -96,7 +96,7 @@ class Transaction():
             # Push transaction amounts and IDs into a min-heap with a size of 3
             heapq.heappush(
                 top_transactions,
-                (transaction.amount, transaction.transaction_id)
+                (float(transaction.amount), transaction.transaction_id)
             )
 
             # Remove the smallest if there are more than 3
@@ -110,11 +110,15 @@ class Transaction():
         ]
 
         # Format the result into the required JSON structure
-        return {
-            "total_transactions": total_transactions,
-            "average_transaction_amount": average_transaction_amount,
+        statistics  = {
+            "total_transactions": float(total_transactions),
+            "average_transaction_amount": float(average_transaction_amount),
             "top_transactions": top_transactions
         }
+    
+        total_transactions = statistics["total_transactions"]
+        average_transaction_amount = statistics["average_transaction_amount"]
+        top_transactions = statistics["top_transactions"]
         
 transactions = Transaction()
 
