@@ -8,23 +8,25 @@ from models import Transactions, Statistics
 from db_postgres.session import engine
 from sqlalchemy.orm import sessionmaker
 from db_session import get_db
-# Redis setup for caching statistics
-r = redis.Redis(host='localhost', port=6379, db=0)
+from config import settings
+from library.utils import utils
 
+# Redis setup for caching statistics
+redis_host = settings.REDIS_HOST
+r = redis.Redis(host=redis_host, port=6379, db=0)
 # Celery setup
 celery_app = celery.Celery(
     'worker',
-    broker='redis://localhost:6379/0'
+    broker=f'redis://{redis_host}:6379/0'
 )
 
 SessionLocal = sessionmaker(bind=engine)
 
 @celery_app.task
 def update_statistics_task():
-    from api.transactions.controller import Transaction
     db = SessionLocal()
     try:
-        statistics = Transaction.calculate_statistics(db)
+        statistics = utils.calculate_statistics(db)
         total_transactions = statistics["total_transactions"]
         average_transaction_amount = statistics["average_transaction_amount"]
         top_transactions = statistics["top_transactions"]
@@ -54,3 +56,4 @@ def update_statistics_task():
         db.commit()
     finally:
         db.close()
+
