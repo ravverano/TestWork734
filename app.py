@@ -5,6 +5,7 @@ import logging
 from db_postgres.session import engine
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
+from models import Base
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -25,6 +26,9 @@ async def startup_event():
         with engine.connect() as connection:
             connection.execute(text("SELECT 1"))
         logger.info("Database connection successful")
+
+         # Automatically create tables for all models
+        Base.metadata.create_all(bind=engine)
     except OperationalError as e:
         logger.error("Database connection failed: %s", e)
         raise RuntimeError(
