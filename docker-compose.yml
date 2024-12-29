@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    command: uvicorn app:app --host 0.0.0.0 --port 5080
+    ports:
+      - "5080:5080"
+    env_file:
+    - .env
+    depends_on:
+      - postgres
+      - redis
+      
+  postgres:
+    image: postgres:13.11
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=ubuntu
+      - POSTGRES_DB=postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
+
+  redis:
+    image: redis:6
+    ports:
+      - "6381:6379"
+
+  celery:
+    build: .
+    command: celery -A workers.celery_worker worker --loglevel=info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - postgres
+
+volumes:
+  postgres_data:
+
+networks:
+  my_network:
+    driver: bridge
