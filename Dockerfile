@@ -14,6 +14,4 @@ RUN pip3 install -r requirements.txt
 EXPOSE 5080
 
 # # Run app
-# CMD ["/bin/sh", "-c", "python3 app.py > app.log & tail -f app.log"]
-# CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 CMD ["/bin/sh", "-c", "python3 app.py > app.log & tail -f app.log"]
